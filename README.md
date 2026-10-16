@@ -90,9 +90,9 @@ docker compose exec backend alembic upgrade head
 curl http://localhost:8000/api/v1/health    # {"status":"healthy"}
 ```
 
-Open http://localhost:3000 and click "Login". The default development login needs no password. Before exposing the app beyond your own machine, set `SECRET_KEY` and `NEXTAUTH_SECRET` in `.env` (`openssl rand -hex 32`) and set up [authentication](#authentication).
+Open http://localhost:8520 and click "Login". The default development login needs no password. Before exposing the app beyond your own machine, set `SECRET_KEY` and `NEXTAUTH_SECRET` in `.env` (`openssl rand -hex 32`) and set up [authentication](#authentication).
 
-To build the images from source with hot reload, use the development stack instead (see [CONTRIBUTING.md](CONTRIBUTING.md#local-development)):
+The API docs are available at http://localhost:8000/docs. To build the images from source with hot reload, use the development stack instead (see [CONTRIBUTING.md](CONTRIBUTING.md#local-development)):
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
@@ -477,7 +477,7 @@ curl https://api.openai.com/v1/models \
 
 ```bash
 # Check what's using the ports
-sudo lsof -i :3000  # Frontend
+sudo lsof -i :8520  # Frontend
 sudo lsof -i :8000  # Backend
 sudo lsof -i :5432  # PostgreSQL
 sudo lsof -i :6379  # Redis

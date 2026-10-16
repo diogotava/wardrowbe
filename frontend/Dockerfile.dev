@@ -11,9 +11,9 @@ RUN npm install
 # The rest will be mounted as volume
 # But we need node_modules to persist, so we use a named volume
 
-EXPOSE 3000
+EXPOSE 8520
 
-ENV PORT=3000
+ENV PORT=8520
 ENV HOSTNAME="0.0.0.0"
 
 # Install deps again at startup in case package.json changed

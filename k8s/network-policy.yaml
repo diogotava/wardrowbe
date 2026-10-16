@@ -90,7 +90,7 @@ spec:
               kubernetes.io/metadata.name: kube-system
       ports:
         - protocol: TCP
-          port: 3000
+          port: 8520
         - protocol: TCP
           port: 8000
 

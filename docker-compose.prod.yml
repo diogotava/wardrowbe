@@ -11,7 +11,7 @@ x-backend-env: &backend-env
   REDIS_URL: redis://redis:6379
   SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in .env}
   STORAGE_PATH: /data/uploads
-  APP_URL: ${APP_URL:-https://localhost:3000}
+  APP_URL: ${APP_URL:-https://localhost:8520}
   LOG_LEVEL: ${LOG_LEVEL:-INFO}
   # Port 4141, not docker-compose.yml's Ollama 11434, because existing prod installs
   # rely on this default; changing it would silently repoint their AI calls.
@@ -31,6 +31,7 @@ x-backend-env: &backend-env
   MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-}
   MAX_BULK_ACTION_COUNT: ${MAX_BULK_ACTION_COUNT:-}
   NTFY_SERVER: ${NTFY_SERVER:-}
+  NTFY_TOPIC: ${NTFY_TOPIC:-}
   NTFY_TOKEN: ${NTFY_TOKEN:-}
   SMTP_HOST: ${SMTP_HOST:-}
   SMTP_PORT: ${SMTP_PORT:-}
@@ -53,7 +54,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wardrobe}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wardrobe}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -68,7 +69,7 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -94,6 +95,7 @@ services:
       FORWARD_AUTH_SECRET: ${FORWARD_AUTH_SECRET:-}
       # nginx appends X-Forwarded-For; add one for each proxy in front of it that appends too
       TRUSTED_PROXY_COUNT: ${TRUSTED_PROXY_COUNT:-1}
+      OIDC_SKIP_SSL_VERIFY: ${OIDC_SKIP_SSL_VERIFY:-false}
     volumes:
       - uploads_data:/data/uploads
     dns:
@@ -106,7 +108,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/api/v1/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -179,7 +181,7 @@ services:
     environment:
       PUID: ${PUID:-1001}
       PGID: ${PGID:-1001}
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://localhost:3000}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://localhost:8520}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?Set NEXTAUTH_SECRET in .env}
       # NEXT_PUBLIC_API_URL is the pre-1.6 name, still honored so existing .env files keep working.
       BACKEND_URL: ${BACKEND_URL:-${NEXT_PUBLIC_API_URL:-http://backend:8000}}
@@ -197,7 +199,7 @@ services:
     depends_on:
       - backend
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:3000').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      test: [ "CMD", "node", "-e", "fetch('http://localhost:8520').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))" ]
       interval: 30s
       timeout: 10s
       retries: 3

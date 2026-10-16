@@ -35,7 +35,7 @@ describe('/api/v1 catch-all proxy', () => {
       process.env.BACKEND_URL = 'http://renamed-backend:8000'
       const spy = mockBackend(new Response('{}', { status: 200 }))
 
-      await GET(new NextRequest('http://localhost:3000/api/v1/users/me'))
+      await GET(new NextRequest('http://localhost:8520/api/v1/users/me'))
 
       expect(targetOf(spy)).toBe('http://renamed-backend:8000/api/v1/users/me')
     })
@@ -43,31 +43,31 @@ describe('/api/v1 catch-all proxy', () => {
     it('honors a BACKEND_URL change without re-importing the module', async () => {
       process.env.BACKEND_URL = 'http://first-host:8000'
       const first = mockBackend(new Response('{}', { status: 200 }))
-      await GET(new NextRequest('http://localhost:3000/api/v1/health'))
+      await GET(new NextRequest('http://localhost:8520/api/v1/health'))
       expect(targetOf(first)).toBe('http://first-host:8000/api/v1/health')
 
       process.env.BACKEND_URL = 'http://second-host:9999'
       const second = mockBackend(new Response('{}', { status: 200 }))
-      await GET(new NextRequest('http://localhost:3000/api/v1/health'))
+      await GET(new NextRequest('http://localhost:8520/api/v1/health'))
       expect(targetOf(second)).toBe('http://second-host:9999/api/v1/health')
     })
 
     it('falls back to NEXT_PUBLIC_API_URL then to http://backend:8000', async () => {
       process.env.NEXT_PUBLIC_API_URL = 'http://legacy-var:8000'
       const spy = mockBackend(new Response('{}', { status: 200 }))
-      await GET(new NextRequest('http://localhost:3000/api/v1/health'))
+      await GET(new NextRequest('http://localhost:8520/api/v1/health'))
       expect(targetOf(spy)).toBe('http://legacy-var:8000/api/v1/health')
 
       delete process.env.NEXT_PUBLIC_API_URL
       const fallback = mockBackend(new Response('{}', { status: 200 }))
-      await GET(new NextRequest('http://localhost:3000/api/v1/health'))
+      await GET(new NextRequest('http://localhost:8520/api/v1/health'))
       expect(targetOf(fallback)).toBe('http://backend:8000/api/v1/health')
     })
 
     it('strips a trailing slash from BACKEND_URL', async () => {
       process.env.BACKEND_URL = 'http://backend:8000/'
       const spy = mockBackend(new Response('{}', { status: 200 }))
-      await GET(new NextRequest('http://localhost:3000/api/v1/health'))
+      await GET(new NextRequest('http://localhost:8520/api/v1/health'))
       expect(targetOf(spy)).toBe('http://backend:8000/api/v1/health')
     })
   })
@@ -76,7 +76,7 @@ describe('/api/v1 catch-all proxy', () => {
     it('preserves the signed-url query string for images', async () => {
       const spy = mockBackend(new Response('binary', { status: 200 }))
       const url =
-        'http://localhost:3000/api/v1/images/8f14e45f-ceea-467a-9d2b-1c2f3a4b5c6d/abc_thumb.jpg?expires=123&sig=xyz%2Babc'
+        'http://localhost:8520/api/v1/images/8f14e45f-ceea-467a-9d2b-1c2f3a4b5c6d/abc_thumb.jpg?expires=123&sig=xyz%2Babc'
 
       await GET(new NextRequest(url))
 
@@ -87,7 +87,7 @@ describe('/api/v1 catch-all proxy', () => {
 
     it('does not re-encode already-encoded path segments', async () => {
       const spy = mockBackend(new Response('{}', { status: 200 }))
-      await GET(new NextRequest('http://localhost:3000/api/v1/items/a%2Fb'))
+      await GET(new NextRequest('http://localhost:8520/api/v1/items/a%2Fb'))
       expect(targetOf(spy)).toBe('http://backend:8000/api/v1/items/a%2Fb')
     })
   })
@@ -107,7 +107,7 @@ describe('/api/v1 catch-all proxy', () => {
         })
       )
 
-      const res = await GET(new NextRequest('http://localhost:3000/api/v1/items'))
+      const res = await GET(new NextRequest('http://localhost:8520/api/v1/items'))
 
       expect(res.headers.get('content-encoding')).toBeNull()
       expect(res.headers.get('content-length')).toBeNull()
@@ -126,7 +126,7 @@ describe('/api/v1 catch-all proxy', () => {
         })
       )
 
-      const res = await GET(new NextRequest('http://localhost:3000/api/v1/images/u/a.jpg'))
+      const res = await GET(new NextRequest('http://localhost:8520/api/v1/images/u/a.jpg'))
 
       expect(res.headers.get('cache-control')).toBe('private, max-age=3600, must-revalidate')
       expect(res.headers.get('content-type')).toBe('image/jpeg')
@@ -138,11 +138,11 @@ describe('/api/v1 catch-all proxy', () => {
       const spy = mockBackend(new Response('{}', { status: 200 }))
 
       await GET(
-        new NextRequest('http://localhost:3000/api/v1/users/me', {
+        new NextRequest('http://localhost:8520/api/v1/users/me', {
           headers: {
             authorization: 'Bearer token-123',
             cookie: 'session=abc',
-            host: 'localhost:3000',
+            host: 'localhost:8520',
             connection: 'keep-alive',
             'transfer-encoding': 'chunked',
           },
@@ -161,7 +161,7 @@ describe('/api/v1 catch-all proxy', () => {
   describe('methods and bodies', () => {
     it('sends no body on GET', async () => {
       const spy = mockBackend(new Response('{}', { status: 200 }))
-      await GET(new NextRequest('http://localhost:3000/api/v1/items'))
+      await GET(new NextRequest('http://localhost:8520/api/v1/items'))
       expect(initOf(spy).body).toBeUndefined()
       expect(initOf(spy).duplex).toBeUndefined()
     })
@@ -169,7 +169,7 @@ describe('/api/v1 catch-all proxy', () => {
     it('streams the body with duplex half on POST', async () => {
       const spy = mockBackend(new Response('{}', { status: 201 }))
       await POST(
-        new NextRequest('http://localhost:3000/api/v1/items', {
+        new NextRequest('http://localhost:8520/api/v1/items', {
           method: 'POST',
           body: 'multipart-payload',
         })
@@ -186,17 +186,17 @@ describe('/api/v1 catch-all proxy', () => {
       ['DELETE', DELETE],
     ])('forwards %s', async (method, handler) => {
       const spy = mockBackend(new Response(null, { status: 204 }))
-      await handler(new NextRequest('http://localhost:3000/api/v1/items/1', { method }))
+      await handler(new NextRequest('http://localhost:8520/api/v1/items/1', { method }))
       expect(initOf(spy).method).toBe(method)
     })
 
     it('forwards HEAD and OPTIONS without a body', async () => {
       const headSpy = mockBackend(new Response(null, { status: 200 }))
-      await HEAD(new NextRequest('http://localhost:3000/api/v1/items', { method: 'HEAD' }))
+      await HEAD(new NextRequest('http://localhost:8520/api/v1/items', { method: 'HEAD' }))
       expect(initOf(headSpy).body).toBeUndefined()
 
       const optSpy = mockBackend(new Response(null, { status: 204 }))
-      await OPTIONS(new NextRequest('http://localhost:3000/api/v1/items', { method: 'OPTIONS' }))
+      await OPTIONS(new NextRequest('http://localhost:8520/api/v1/items', { method: 'OPTIONS' }))
       expect(initOf(optSpy).method).toBe('OPTIONS')
     })
   })
@@ -204,7 +204,7 @@ describe('/api/v1 catch-all proxy', () => {
   describe('status and error handling', () => {
     it('preserves non-2xx status and body', async () => {
       mockBackend(new Response('{"detail":"Not authenticated"}', { status: 401 }))
-      const res = await GET(new NextRequest('http://localhost:3000/api/v1/users/me'))
+      const res = await GET(new NextRequest('http://localhost:8520/api/v1/users/me'))
       expect(res.status).toBe(401)
       expect(await res.json()).toEqual({ detail: 'Not authenticated' })
     })
@@ -219,7 +219,7 @@ describe('/api/v1 catch-all proxy', () => {
         })
       )
 
-      const res = await GET(new NextRequest('http://localhost:3000/api/v1/auth/mobile-callback?code=abc'))
+      const res = await GET(new NextRequest('http://localhost:8520/api/v1/auth/mobile-callback?code=abc'))
 
       expect(initOf(spy).redirect).toBe('manual')
       expect(res.status).toBe(302)
@@ -232,7 +232,7 @@ describe('/api/v1 catch-all proxy', () => {
         Object.assign(new Error('getaddrinfo EAI_AGAIN backend'), { code: 'EAI_AGAIN' })
       ) as unknown as typeof fetch
 
-      const res = await GET(new NextRequest('http://localhost:3000/api/v1/users/me'))
+      const res = await GET(new NextRequest('http://localhost:8520/api/v1/users/me'))
 
       expect(res.status).toBe(502)
       const body = await res.json()

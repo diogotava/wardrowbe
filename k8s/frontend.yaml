@@ -21,7 +21,7 @@ spec:
           image: wardrobe/frontend:latest
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 3000
+            - containerPort: 8520
           securityContext:
             runAsNonRoot: true
             runAsUser: 1001
@@ -100,14 +100,14 @@ spec:
           livenessProbe:
             httpGet:
               path: /
-              port: 3000
+              port: 8520
             initialDelaySeconds: 30
             periodSeconds: 30
             timeoutSeconds: 10
           readinessProbe:
             httpGet:
               path: /
-              port: 3000
+              port: 8520
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
@@ -122,5 +122,5 @@ spec:
   selector:
     app: frontend
   ports:
-    - port: 3000
-      targetPort: 3000
+    - port: 8520
+      targetPort: 8520

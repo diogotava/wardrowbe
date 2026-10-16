@@ -48,9 +48,9 @@ COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
-EXPOSE 3000
+EXPOSE 8520
 
-ENV PORT 3000
+ENV PORT 8520
 ENV HOSTNAME "0.0.0.0"
 
 CMD ["node", "server.js"]

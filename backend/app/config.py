@@ -53,7 +53,7 @@ class Settings(BaseSettings):
     trusted_proxy_count: int = Field(default=0, ge=0)
 
     # CORS
-    cors_origins: list[str] = Field(default=["http://localhost:3000", "http://localhost:8081"])
+    cors_origins: list[str] = Field(default=["http://localhost:8520", "http://localhost:8081"])
 
     # Database
     database_url: PostgresDsn = Field(

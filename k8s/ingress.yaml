@@ -35,7 +35,7 @@ spec:
               service:
                 name: frontend
                 port:
-                  number: 3000
+                  number: 8520
 
 ---
 # HTTP to HTTPS redirect
@@ -59,7 +59,7 @@ spec:
               service:
                 name: frontend
                 port:
-                  number: 3000
+                  number: 8520
 
 ---
 # Middleware for HTTP to HTTPS redirect

@@ -46,11 +46,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wardrobe}
       POSTGRES_DB: ${POSTGRES_DB:-wardrobe}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - /home/dota1310/homelab/data/wardrobe/postgres:/var/lib/postgresql/data
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wardrobe}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wardrobe}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -61,11 +61,11 @@ services:
     image: redis:7-alpine
     container_name: wardrobe-redis
     volumes:
-      - redis_data:/data
+      - /home/dota1310/homelab/data/wardrobe/redis:/data
     ports:
       - "${REDIS_PORT:-6379}:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -79,7 +79,7 @@ services:
       - "host.docker.internal:host-gateway"
     environment:
       <<: *backend-env
-      CORS_ORIGINS: '["http://localhost:3000", "http://frontend:3000"]'
+      CORS_ORIGINS: '["http://localhost:8520", "http://frontend:8520"]'
       OIDC_ISSUER_URL: ${OIDC_ISSUER_URL:-}
       OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
       OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:-}
@@ -89,7 +89,7 @@ services:
       # theirs; set 1 once a proxy is the only way in (README: Client IPs behind a reverse proxy)
       TRUSTED_PROXY_COUNT: ${TRUSTED_PROXY_COUNT:-0}
     volumes:
-      - wardrobe_data:/data/wardrobe
+      - /home/dota1310/homelab/data/wardrobe/uploads:/data/wardrobe
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     depends_on:
@@ -98,7 +98,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/api/v1/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -109,9 +109,10 @@ services:
     image: ghcr.io/anyesh/wardrowbe:frontend-latest
     container_name: wardrobe-frontend
     environment:
+      PORT: "8520"
       # NEXT_PUBLIC_API_URL is the pre-1.6 name, still honored so existing .env files keep working.
       BACKEND_URL: ${BACKEND_URL:-${NEXT_PUBLIC_API_URL:-http://backend:8000}}
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:8520}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-change-me-in-production}
       DEV_MODE: ${DEBUG:-false}
       OIDC_ISSUER_URL: ${OIDC_ISSUER_URL:-}
@@ -125,22 +126,23 @@ services:
       PUID: ${PUID:-1001}
       PGID: ${PGID:-1001}
     ports:
-      - "${FRONTEND_PORT:-3000}:3000"
+      - "${FRONTEND_PORT:-8520}:8520"
     depends_on:
       - backend
     restart: unless-stopped
 
-# Background Worker for AI Tagging
+  # Background Worker for AI Tagging
   worker:
     image: ghcr.io/anyesh/wardrowbe:backend-latest
     container_name: wardrobe-worker
-    command: arq app.workers.worker.WorkerSettings
+    command: >-
+      sh -c "alembic upgrade head && arq app.workers.worker.WorkerSettings"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
       <<: *backend-env
     volumes:
-      - wardrobe_data:/data/wardrobe
+      - /home/dota1310/homelab/data/wardrobe/uploads:/data/wardrobe
     depends_on:
       postgres:
         condition: service_healthy
@@ -148,12 +150,13 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-# Local image work (rotation, background removal) on its own queue, so a bulk
-# batch of it cannot block AI tagging behind it.
+  # Local image work (rotation, background removal) on its own queue, so a bulk
+  # batch of it cannot block AI tagging behind it.
   image-worker:
     image: ghcr.io/anyesh/wardrowbe:backend-latest
     container_name: wardrobe-image-worker
-    command: arq app.workers.image_worker.ImageWorkerSettings
+    command: >-
+      sh -c "alembic upgrade head && arq app.workers.image_worker.ImageWorkerSettings"
     environment:
       <<: *backend-env
       IMAGE_WORKER_CONCURRENCY: ${IMAGE_WORKER_CONCURRENCY:-1}
@@ -162,7 +165,7 @@ services:
       BG_REMOVAL_URL: ${BG_REMOVAL_URL:-}
       BG_REMOVAL_API_KEY: ${BG_REMOVAL_API_KEY:-}
     volumes:
-      - wardrobe_data:/data/wardrobe
+      - /home/dota1310/homelab/data/wardrobe/uploads:/data/wardrobe
       - rembg_models:/opt/rembg/models
     depends_on:
       postgres:

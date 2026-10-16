@@ -6,7 +6,7 @@ wardrobe.local {
 
     # NextAuth routes go to frontend
     handle /api/auth/* {
-        reverse_proxy frontend:3000
+        reverse_proxy frontend:8520
     }
 
     # Backend API routes
@@ -27,6 +27,6 @@ wardrobe.local {
 
     # Everything else to frontend
     handle {
-        reverse_proxy frontend:3000
+        reverse_proxy frontend:8520
     }
 }

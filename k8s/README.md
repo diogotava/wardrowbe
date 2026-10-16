@@ -22,7 +22,7 @@ This directory contains Kubernetes manifests for deploying Wardrobe to a Kuberne
         ▼                    ▼                    │
    ┌─────────┐          ┌─────────┐               │
    │Frontend │          │ Backend │               │
-   │  :3000  │          │  :8000  │               │
+   │  :8520  │          │  :8000  │               │
    └─────────┘          └────┬────┘               │
                              │                    │
                    ┌─────────┼─────────┐          │
@@ -304,5 +304,5 @@ kubectl -n wardrobe exec -it deployment/backend -- bash
 
 # Port forward for local access
 kubectl -n wardrobe port-forward svc/backend 8000:8000
-kubectl -n wardrobe port-forward svc/frontend 3000:3000
+kubectl -n wardrobe port-forward svc/frontend 8520:8520
 ```
