@@ -22,8 +22,16 @@ services:
       - "443:443"
     volumes:
       - ./Caddyfile.dev:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
+      - type: bind
+        source: ../../data/wardrobe/dev/caddy/data
+        target: /data
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ../../data/wardrobe/dev/caddy/config
+        target: /config
+        bind:
+          create_host_path: false
     depends_on:
       - frontend
       - backend
@@ -36,7 +44,6 @@ services:
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
       - ./backend:/app
-      - wardrobe_data:/data/wardrobe
     environment:
       DEBUG: "true"
       DATABASE_ECHO: "false"
@@ -48,7 +55,11 @@ services:
       dockerfile: Dockerfile.dev
     volumes:
       - ./frontend:/app
-      - frontend_node_modules:/app/node_modules
+      - type: bind
+        source: ../../data/wardrobe/dev/frontend_node_modules
+        target: /app/node_modules
+        bind:
+          create_host_path: false
     environment:
       NODE_ENV: development
       # For local dev, use http://localhost:8520 (simpler, no cert issues)
@@ -63,7 +74,6 @@ services:
     command: watchfiles --filter python "arq app.workers.worker.WorkerSettings" /app
     volumes:
       - ./backend:/app
-      - wardrobe_data:/data/wardrobe
     environment:
       DEBUG: "true"
       DATABASE_ECHO: "false"
@@ -75,12 +85,6 @@ services:
     command: watchfiles --filter python "arq app.workers.image_worker.ImageWorkerSettings" /app
     volumes:
       - ./backend:/app
-      - wardrobe_data:/data/wardrobe
     environment:
       DEBUG: "true"
       DATABASE_ECHO: "false"
-
-volumes:
-  caddy_data:
-  caddy_config:
-  frontend_node_modules:

@@ -46,7 +46,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wardrobe}
       POSTGRES_DB: ${POSTGRES_DB:-wardrobe}
     volumes:
-      - /home/dota1310/homelab/data/wardrobe/postgres:/var/lib/postgresql/data
+      - type: bind
+        source: ../../data/wardrobe/postgres
+        target: /var/lib/postgresql/data
+        bind:
+          create_host_path: false
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     healthcheck:
@@ -61,7 +65,11 @@ services:
     image: redis:7-alpine
     container_name: wardrobe-redis
     volumes:
-      - /home/dota1310/homelab/data/wardrobe/redis:/data
+      - type: bind
+        source: ../../data/wardrobe/redis
+        target: /data
+        bind:
+          create_host_path: false
     ports:
       - "${REDIS_PORT:-6379}:6379"
     healthcheck:
@@ -89,7 +97,11 @@ services:
       # theirs; set 1 once a proxy is the only way in (README: Client IPs behind a reverse proxy)
       TRUSTED_PROXY_COUNT: ${TRUSTED_PROXY_COUNT:-0}
     volumes:
-      - /home/dota1310/homelab/data/wardrobe/uploads:/data/wardrobe
+      - type: bind
+        source: ../../data/wardrobe/uploads
+        target: /data/wardrobe
+        bind:
+          create_host_path: false
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     depends_on:
@@ -142,7 +154,11 @@ services:
     environment:
       <<: *backend-env
     volumes:
-      - /home/dota1310/homelab/data/wardrobe/uploads:/data/wardrobe
+      - type: bind
+        source: ../../data/wardrobe/uploads
+        target: /data/wardrobe
+        bind:
+          create_host_path: false
     depends_on:
       postgres:
         condition: service_healthy
@@ -165,17 +181,19 @@ services:
       BG_REMOVAL_URL: ${BG_REMOVAL_URL:-}
       BG_REMOVAL_API_KEY: ${BG_REMOVAL_API_KEY:-}
     volumes:
-      - /home/dota1310/homelab/data/wardrobe/uploads:/data/wardrobe
-      - rembg_models:/opt/rembg/models
+      - type: bind
+        source: ../../data/wardrobe/uploads
+        target: /data/wardrobe
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ../../data/wardrobe/rembg_models
+        target: /opt/rembg/models
+        bind:
+          create_host_path: false
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     restart: unless-stopped
-
-volumes:
-  postgres_data:
-  redis_data:
-  wardrobe_data:
-  rembg_models:

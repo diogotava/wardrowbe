@@ -86,6 +86,7 @@ git clone https://github.com/Anyesh/wardrowbe.git
 cd wardrowbe
 cp .env.example .env    # then set the AI_* values, see AI Configuration below
 
+mkdir -p ../../data/wardrobe/{postgres,redis,uploads,rembg_models}
 docker compose pull
 docker compose up -d
 docker compose exec backend alembic upgrade head
@@ -98,8 +99,47 @@ Open http://localhost:8520 and click "Login". The default development login need
 The API docs are available at http://localhost:8000/docs. To build the images from source with hot reload, use the development stack instead (see [CONTRIBUTING.md](CONTRIBUTING.md#local-development)):
 
 ```bash
+mkdir -p ../../data/wardrobe/dev/caddy/{data,config}
+mkdir -p ../../data/wardrobe/dev/frontend_node_modules
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 ```
+
+### Homelab Data Storage
+
+This checkout stores all Docker-managed application state in the homelab's
+`data/wardrobe/` directory, outside the application checkout:
+
+```text
+data/wardrobe/
+  postgres/       PostgreSQL database
+  redis/          Redis snapshots
+  uploads/        Uploaded photos and generated images
+  rembg_models/   Downloaded background-removal models
+  dev/            Development Caddy state and frontend dependencies
+```
+
+The main, production, and development Compose configurations all use host bind
+mounts, not named Docker volumes. Removing containers or Docker volumes does not
+remove these host files. Missing data directories cause startup to fail instead
+of being created automatically. For a new installation, create the directories
+shown above; for an existing installation, restore missing data before startup.
+An existing but empty directory still initializes fresh data.
+
+All three configurations share the same database and uploads. Run only one stack
+at a time; development mode uses your real data. Switching configurations does not
+migrate data from older Docker volumes: copy their contents with the old stack
+stopped before starting the new configuration, and retain the original volumes
+until the migrated installation is verified.
+
+To back up or move this installation, stop the entire stack before copying all of
+`data/wardrobe/`, preserving file ownership and permissions (database files may
+require administrator access). Restart the source after the copy completes.
+Copy the app's `.env` separately and keep it private: its secrets are needed as
+well as the data. On the destination, restore the data to the same relative
+location before startup, use the same PostgreSQL major version, and ensure the
+configured PUID/PGID can write uploads and model files. Verify your records and
+images before deleting the source. Keep a separate off-machine backup; bind
+mounts do not protect against host-file deletion or disk failure.
 
 ## AI Configuration
 
