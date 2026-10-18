@@ -41,10 +41,6 @@
 
 Self-hosted wardrobe management with AI-powered outfit recommendations. Take photos of your clothes, let AI tag them, and get daily outfit suggestions based on weather and occasion.
 
-## Self-Hosted and Cloud
-
-This repo is the self-hosted edition. [Wardrowbe Cloud](https://wardrowbe.com) shares the same core but has its own roadmap, so features differ and aren't ported 1:1; this README describes the self-hosted edition. Ideas and core fixes go back and forth between the two. Community contributions stay free and open here and never go behind a paywall. Want a cloud feature here, or have an idea? Please open an issue or discussion; if there's strong interest, we'll look into bringing it over. If you contribute here and are happy for it to go into Cloud too, say so in your PR. More in [this discussion](https://github.com/Anyesh/wardrowbe/discussions/267).
-
 ## Features
 
 - **Photo-based wardrobe** - Upload photos, AI extracts clothing details automatically
@@ -549,6 +545,10 @@ Thanks to our supporters:
 
 - [@aaratisharma-star](https://github.com/aaratisharma-star)
 - [@zkhcohen](https://github.com/zkhcohen)
+
+## Self-Hosted and Cloud
+
+This repo is the self-hosted edition. [Wardrowbe Cloud](https://wardrowbe.com) shares the same core but has its own roadmap, so features differ and aren't ported 1:1; this README describes the self-hosted edition. Ideas and core fixes go back and forth between the two. Community contributions stay free and open here and never go behind a paywall. Want a cloud feature here, or have an idea? Please open an issue or discussion; if there's strong interest, we'll look into bringing it over. If you contribute here and are happy for it to go into Cloud too, say so in your PR. More in [this discussion](https://github.com/Anyesh/wardrowbe/discussions/267).
 
 ## License
 
